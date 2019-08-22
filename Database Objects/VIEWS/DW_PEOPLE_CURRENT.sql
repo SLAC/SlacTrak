@@ -1,0 +1,28 @@
+--------------------------------------------------------
+--  DDL for View DW_PEOPLE_CURRENT
+--------------------------------------------------------
+
+  CREATE OR REPLACE FORCE EDITIONABLE VIEW "APPS_ADMIN"."DW_PEOPLE_CURRENT" ("EMPLOYEE_ID", "EMPLOYEE_NAME", "BUILDING", "ROOM", "WORK_PHONE", "MAIL_STOP", "EPO", "ORG_LEVEL_0_CODE", "ORG_LEVEL_1_CODE", "SUPERVISOR_ID", "EMPLOYEE_STATUS", "LAST_NAME", "FIRST_NAME", "DATA_AS_OF_DATE", "ORG_LEVEL_1_DESC", "ORG_CODE", "EMPLOYEE_CLASS", "HIRE_DATE", "GONET", "TERMINATION_DATE") AS 
+  SELECT "EMPLOYEE_ID",
+    "EMPLOYEE_NAME",
+    "BUILDING",
+    "ROOM",
+    "WORK_PHONE",
+    "MAIL_STOP",
+    "EPO",
+    "ORG_LEVEL_0_CODE",
+    "ORG_LEVEL_1_CODE",
+    "SUPERVISOR_ID",
+    "EMPLOYEE_STATUS",
+    "LAST_NAME",
+    "FIRST_NAME",
+    "DATA_AS_OF_DATE",
+    "ORG_LEVEL_1_DESC",
+    "ORG_CODE",
+    "EMPLOYEE_CLASS",
+    "HIRE_DATE",
+    "GONET",
+    "TERMINATION_DATE"
+  FROM dw_people
+  WHERE gonet = 'ACTIVE'
+;

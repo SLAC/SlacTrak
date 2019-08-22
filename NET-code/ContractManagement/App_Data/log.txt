@@ -1,0 +1,64 @@
+2019-08-22 10:29:04,292 [9] ERROR ContractManagement._Default - System.Data.OracleClient.OracleException (0x80131938): ORA-01017: invalid username/password; logon denied
+
+   at System.Data.OracleClient.OracleException.Check(OciErrorHandle errorHandle, Int32 rc)
+   at System.Data.OracleClient.OracleInternalConnection.OpenOnLocalTransaction(String userName, String password, String serverName, Boolean integratedSecurity, Boolean unicode, Boolean omitOracleConnectionName)
+   at System.Data.OracleClient.OracleInternalConnection..ctor(OracleConnectionString connectionOptions)
+   at System.Data.OracleClient.OracleConnectionFactory.CreateConnection(DbConnectionOptions options, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningObject)
+   at System.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnection owningConnection, DbConnectionPool pool, DbConnectionOptions options)
+   at System.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject)
+   at System.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject)
+   at System.Data.ProviderBase.DbConnectionPool.GetConnection(DbConnection owningObject)
+   at System.Data.ProviderBase.DbConnectionFactory.GetConnection(DbConnection owningConnection)
+   at System.Data.ProviderBase.DbConnectionClosed.OpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory)
+   at System.Data.OracleClient.OracleConnection.Open()
+   at System.Data.Common.DbDataAdapter.FillInternal(DataSet dataset, DataTable[] datatables, Int32 startRecord, Int32 maxRecords, String srcTable, IDbCommand command, CommandBehavior behavior)
+   at System.Data.Common.DbDataAdapter.Fill(DataSet dataSet, Int32 startRecord, Int32 maxRecords, String srcTable, IDbCommand command, CommandBehavior behavior)
+   at System.Data.Common.DbDataAdapter.Fill(DataSet dataSet, String srcTable)
+   at System.Web.UI.WebControls.SqlDataSourceView.ExecuteSelect(DataSourceSelectArguments arguments)
+   at System.Web.UI.WebControls.ListControl.OnDataBinding(EventArgs e)
+   at System.Web.UI.WebControls.ListControl.PerformSelect()
+   at System.Web.UI.WebControls.BaseDataBoundControl.DataBind()
+   at ContractManagement._Default.Page_Load(Object sender, EventArgs e) in C:\PPPL\ContractManagement\Default.aspx.cs:line 141
+2019-08-22 10:29:04,324 [9] ERROR ContractManagement.Data.CMS_DataUtil - System.Data.OracleClient.OracleException (0x80131938): ORA-01017: invalid username/password; logon denied
+
+   at System.Data.ProviderBase.DbConnectionPool.GetConnection(DbConnection owningObject)
+   at System.Data.ProviderBase.DbConnectionFactory.GetConnection(DbConnection owningConnection)
+   at System.Data.ProviderBase.DbConnectionClosed.OpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory)
+   at System.Data.OracleClient.OracleConnection.Open()
+   at ContractManagement.Data.CMS_DataUtil.GetReader(String sqlText, OracleCommand cmdPm) in C:\PPPL\ContractManagement\Data\CMS_DataUtil.cs:line 132
+2019-08-22 10:29:04,324 [9] ERROR ContractManagement.Business.CMS_Common_Util - System.NullReferenceException: Object reference not set to an instance of an object.
+   at ContractManagement.Business.CMS_Common_Util.GetUserID() in C:\PPPL\ContractManagement\Business\CMS_Common_Util.cs:line 176
+2019-08-22 10:30:07,691 [6] ERROR ContractManagement._Default - System.Data.OracleClient.OracleException (0x80131938): ORA-01017: invalid username/password; logon denied
+
+   at System.Data.OracleClient.OracleException.Check(OciErrorHandle errorHandle, Int32 rc)
+   at System.Data.OracleClient.OracleInternalConnection.OpenOnLocalTransaction(String userName, String password, String serverName, Boolean integratedSecurity, Boolean unicode, Boolean omitOracleConnectionName)
+   at System.Data.OracleClient.OracleInternalConnection..ctor(OracleConnectionString connectionOptions)
+   at System.Data.OracleClient.OracleConnectionFactory.CreateConnection(DbConnectionOptions options, Object poolGroupProviderInfo, DbConnectionPool pool, DbConnection owningObject)
+   at System.Data.ProviderBase.DbConnectionFactory.CreatePooledConnection(DbConnection owningConnection, DbConnectionPool pool, DbConnectionOptions options)
+   at System.Data.ProviderBase.DbConnectionPool.CreateObject(DbConnection owningObject)
+   at System.Data.ProviderBase.DbConnectionPool.UserCreateRequest(DbConnection owningObject)
+   at System.Data.ProviderBase.DbConnectionPool.GetConnection(DbConnection owningObject)
+   at System.Data.ProviderBase.DbConnectionFactory.GetConnection(DbConnection owningConnection)
+   at System.Data.ProviderBase.DbConnectionClosed.OpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory)
+   at System.Data.OracleClient.OracleConnection.Open()
+   at System.Data.Common.DbDataAdapter.FillInternal(DataSet dataset, DataTable[] datatables, Int32 startRecord, Int32 maxRecords, String srcTable, IDbCommand command, CommandBehavior behavior)
+   at System.Data.Common.DbDataAdapter.Fill(DataSet dataSet, Int32 startRecord, Int32 maxRecords, String srcTable, IDbCommand command, CommandBehavior behavior)
+   at System.Data.Common.DbDataAdapter.Fill(DataSet dataSet, String srcTable)
+   at System.Web.UI.WebControls.SqlDataSourceView.ExecuteSelect(DataSourceSelectArguments arguments)
+   at System.Web.UI.WebControls.ListControl.OnDataBinding(EventArgs e)
+   at System.Web.UI.WebControls.ListControl.PerformSelect()
+   at System.Web.UI.WebControls.BaseDataBoundControl.DataBind()
+   at ContractManagement._Default.Page_Load(Object sender, EventArgs e) in C:\PPPL\ContractManagement\Default.aspx.cs:line 141
+2019-08-22 10:30:07,722 [14] ERROR ContractManagement.Data.CMS_DataUtil - System.Data.OracleClient.OracleException (0x80131938): ORA-01017: invalid username/password; logon denied
+
+   at System.Data.ProviderBase.DbConnectionPool.GetConnection(DbConnection owningObject)
+   at System.Data.ProviderBase.DbConnectionFactory.GetConnection(DbConnection owningConnection)
+   at System.Data.ProviderBase.DbConnectionClosed.OpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory)
+   at System.Data.OracleClient.OracleConnection.Open()
+   at ContractManagement.Data.CMS_DataUtil.GetReader(String sqlText, OracleCommand cmdPm) in C:\PPPL\ContractManagement\Data\CMS_DataUtil.cs:line 132
+2019-08-22 10:30:07,722 [14] ERROR ContractManagement.Business.CMS_Common_Util - System.NullReferenceException: Object reference not set to an instance of an object.
+   at ContractManagement.Business.CMS_Common_Util.GetUserID() in C:\PPPL\ContractManagement\Business\CMS_Common_Util.cs:line 176
+2019-08-22 10:31:01,918 [10] INFO  ContractManagement.Business.CMS_Common_Util -  GetUserId312150
+2019-08-22 10:33:19,989 [9] INFO  ContractManagement.Business.CMS_Common_Util -  GetUserId312150
+2019-08-22 10:34:24,035 [11] INFO  ContractManagement.Business.CMS_Common_Util -  GetUserId312150
+2019-08-22 10:43:35,352 [60] INFO  ContractManagement.Business.CMS_Common_Util -  GetUserId312150

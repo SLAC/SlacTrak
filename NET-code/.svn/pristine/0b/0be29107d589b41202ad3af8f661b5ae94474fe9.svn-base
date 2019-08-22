@@ -1,0 +1,151 @@
+﻿
+Before june 6th, 2013:
+
+=>1. On Page postback, default goes to add -> to reproduce this error, click on the delete and after the popup comes, it goes to the add state
+
+=>2. Add "choose one" to the directorate dept dropdown
+
+=>3. Associate the value for directorate to org id in organization table and change the query for department selection
+
+=>4. Refactor deliverable page , move common code to a separate fn
+
+=>5. Menu should be selected based on the navigation
+
+=>6. Welcome screen name should appear on top.. if possible, with a group they belong to
+
+=>7. Error Page and Permission Page
+
+=>8. List delverable page
+
+=>9. Dashboard atleast for CMA
+
+=>10. validations
+
+=>11. File upload size and validation check
+
+=>12. Status to View page
+
+=?13. Validate Postback - avoid duplication, either disable submit using jquery or check the guid
+
+=?14. When name is changed, change the corresponding drt and dept (reset was done - need to figure out how to select automatically)
+
+=>15. Deliverable page is messedup on reviewadd/reviewedit for document and edit button - cancel changes
+
+=>16. Owner to add subowners on edit
+
+=>17. Submit button
+
+=>18. Dashboard for Owner/Subowner
+
+=>19. Test deliverable with a test requiremnt added
+
+=>20. File delete - restriction
+
+=>21. Check - if delete a file and editing at the same time - cannot do as upload file is  not visible at the time of edit
+
+?22. Owner can delete a subowner
+
+=>23. File should be uploaded for submit if file required is y
+
+=>?24. Is the add document available only when upload required is true??
+
+=>25. List of deliverable for owners should show only the list
+
+=>26. Due in next 10 days...
+
+=>27. Notification schedule if empty - replace it with NA
+
+28. Subowners formatting not good during add more or edit
+
+29. Dept and drt if owner is changed 
+
+<!--<div><uc1:DynamicTB ID="TB1" runat="server" /></div>-->
+<%@ Register Src="~/User Controls/DynamicTextBox.ascx" TagName="DynamicTB" TagPrefix="uc1" %>
+
+Later:
+
+1. Move jquery/javascript to common functions - 
+=>2. log4net
+=>3. Emails
+=>4. SSO View - Approve and Reject functionality
+=>5. Contract, clause, Requirement functionality
+6. audit trail
+=>7. Generic reports with export to excel
+8. Session Timeout error message
+9. Input validation for all query strings and hidden fields
+10. Back to search link on the view page based on the url referrer
+=>11. SSO List with approve reject 
+=>12.Approve by default - 60 days gap if no actiont aken
+=>13. Track every SSO move
+=>14.Based on June 25th meeting, take care of carriage returns and apos in all textareas
+=>15.Remove ids 
+=>16.Whitelist of characters
+17. Approvers not in the list 
+=>8. Approvers - made inactive - email should not go to them
+=>9. REQ -EDIT CHECK
+
+Main pending before code freeze:
+
+=>P0 1. whitelist, carriage return and apos
+2. back to search link from view pages
+3. input validation for qs and hidden fileds, check all
+=>P3 4. log4net
+=>P2-5. Test thoroughly everything
+=>P1 6. Admin main page - default to clause??
+=>P0-7. Error in report page - if all selected for type - check
+=>8. Date,reason fields based on status
+
+Deployment:
+
+1. schedule jobs for reminder emails
+2. schedule job for procedure status change
+
+
+
+SECURITY:
+
+1. Check if a text field populates a hidden field and hidden field/text field is used in a javascript msg
+
+=>2. Input should be validated as strictly as possible on arrival, given the kind of content which it is expected to contain. For example, personal names should consist of alphabetical and a small range of typographical characters, and be relatively short; a year of birth should consist of exactly four numerals; email addresses should match a well-defined regular expression. Input which fails the validation should be rejected, not sanitized.
+
+3. User input should be HTML-encoded at any point where it is copied into application responses. All HTML metacharacters, including < > " ' and =, should be replaced with the corresponding HTML entities (&lt; &gt; etc). 
+
+4.One common defense is to double up any single quotation marks appearing within user input before incorporating that input into a SQL query. This defense is designed to prevent malformed data from terminating the string in which it is inserted. However, if the data being incorporated into queries is numeric, then the defense may fail, because numeric data may not be encapsulated within quotes, in which case only a space is required to break out of the data context and interfere with the query. Further, in second-order SQL injection attacks, data that has been safely escaped when initially inserted into the database is subsequently read from the database and then passed back to it again. Quotation marks that have been doubled up initially will return to their original form when the data is reused, allowing the defense to be bypassed. 
+
+
+5. Another often cited defense is to use stored procedures for database access. While stored procedures can provide security benefits, they are not guaranteed to prevent SQL injection attacks. The same kinds of vulnerabilities that arise within standard dynamic SQL queries can arise if any SQL is dynamically constructed within stored procedures. Further, even if the procedure is sound, SQL injection can arise if the procedure is invoked in an unsafe manner using user-controllable data. 
+
+6.Echoing user-controllable data within a script context is inherently dangerous and can make XSS attacks difficult to prevent. If at all possible, the application should avoid echoing user data within this context. 
+
+7. Check redirect within create message alert that has variables
+
+
+
+	
+
+Qtns:
+
+lock clause and requirement down after a point?
+FY? maybe in a later phase
+      
+
+	     var onBeforeUnloadFired = false;
+
+            window.onbeforeunload = function (sender, args) {
+                if (window.event) {
+                    if (!onBeforeUnloadFired) {
+                        onBeforeUnloadFired = true;
+                        window.event.returnValue = 'You will lose any unsaved changes!'; //IE
+                    }
+                }
+                else {
+                    return 'You will lose any unsaved changes!'; //FX
+                }
+
+                window.setTimeout("ResetOnBeforeUnloadFired()", 1000);
+            }
+
+            function ResetOnBeforeUnloadFired() {
+                //Need this variable to prevent IE firing twice.
+                onBeforeUnloadFired = false;
+            }  

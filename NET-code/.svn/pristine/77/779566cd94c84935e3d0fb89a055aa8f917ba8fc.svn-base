@@ -1,0 +1,42 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+namespace ContractManagement
+{
+    public partial class Report_Home : System.Web.UI.Page
+    {
+        protected void Page_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        protected void Btnpc_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("Report.aspx?page=cl");
+        }
+
+        protected void BtnCustom_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("ReportCriteria.aspx");
+        }
+
+        protected void BtnReq_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("Report.aspx?page=req");
+        }
+
+        protected void BtnFy_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("Report.aspx?page=fy");
+        }
+
+        protected void BtnFlowdown_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("Report.aspx?page=reqfd");
+        }
+    }
+}

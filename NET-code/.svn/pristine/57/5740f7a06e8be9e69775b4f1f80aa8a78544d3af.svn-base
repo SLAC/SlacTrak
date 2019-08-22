@@ -1,0 +1,187 @@
+﻿//$Header:$
+//
+//  Site.Master.cs
+//  Developed by Madhu Swaminathan
+//  Copyright (c) 2013 SLAC. All rights reserved.
+//
+//  This is the codebehind for Master Page
+//
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Configuration;
+
+namespace ContractManagement
+{
+    public partial class SiteMaster : System.Web.UI.MasterPage
+    {
+        public string UserName;
+        Business.CMS_Common_Util objCommon = new Business.CMS_Common_Util();
+        Business.UserRoles objUser = new Business.UserRoles();
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            string _userId = "";
+            string _isProd = "Y";
+            string _ver = "";
+
+            //COMMENTS MS: Added this to clear the browser cache as it stores the previous information even after the tab is closed
+            //Removing this part as it causes back button not to work.. showing page has expired msg
+
+            //HttpContext.Current.Response.Cache.SetCacheability(HttpCacheability.NoCache);
+            //HttpContext.Current.Response.Cache.SetNoStore();
+           
+            _userId = objCommon.GetUserID();
+            if (_userId == "err") { Response.Redirect("Error.aspx"); }
+            if (_userId != "")
+            {
+                UserName = objCommon.GetFullName(objCommon.GetEmpname(_userId));
+                bool _isCMA = false;
+                bool _isAdmin = false;
+                bool _isALD = false;
+                bool _isDiradmin = false;
+                bool _isSSO = false;
+                bool _isSSOSuper = false;
+
+                objUser.GetUserRole(_userId);
+                _isCMA = (bool)Session["cma"];
+                _isAdmin = (bool)Session["admin"];
+                _isALD = (bool)Session["ald"];
+                _isDiradmin = (bool)Session["diradmin"];
+                _isSSO = (bool)Session["sso"];
+                _isSSOSuper = (bool)Session["ssosuper"];
+
+                if ((!_isCMA) && (!_isAdmin))
+                {
+                    this.NavigationMenu.Items.Remove(NavigationMenu.Items[2]);
+                    //if ((!_isALD) && (!_isDiradmin))
+                    //{
+                    // this.NavigationMenu.Items.Remove(NavigationMenu.Items[2]);
+                    //}
+                    // Based on the assumption that the SSO or SSOSUper cannot own any items in slactrak
+                 // if ((_isSSO) || (_isSSOSuper))
+                   // {
+                     //   this.NavigationMenu.Items.Remove(NavigationMenu.Items[2]);
+                    //}
+
+
+                }
+                if (!Page.IsPostBack)
+                {
+
+                    _isProd = ConfigurationManager.AppSettings["prodServer"];
+                    if (_isProd == "N")
+                    {
+                        LblInfo.Visible = true;
+
+                    }
+                    else
+                    {
+                        LblInfo.Visible = false;
+
+                    }
+
+                    if (objCommon.IsVersion("old"))
+                    {
+                        LblAppExtn.Text = " (You are viewing data for FYs prior to FY18. ";
+                        LblAppExtnEnd.Text = "for access to the current FY) ";
+                        aLinknew.Visible = false;
+
+                    }
+                    else if (objCommon.IsVersion("new"))
+                    {
+                        LblAppExtn.Text = "<b><font color=yellow>FY18 Q2-Q4 Prime Contract Data and Deliverables now accessible in SLACTrak, and combined with FY18 Q1 information via this page. Please contact James Burtnett (x4240) if you have any questions.</font></b>";
+                        LblAppExtn.Text += " <br/>(For access to information in SLACTrak prior to FY18, please ";
+                        LblAppExtnEnd.Text = ") ";
+                        LblAppExtn.Visible = false;
+                        LblAppExtnEnd.Visible = false;
+                        LnkExtn.Visible = false;
+                        aLinknew.Visible = true;
+                    
+                    }
+                
+                }
+            }
+            else
+            {
+                Response.Redirect("Permission.aspx?msg=noperm");
+            }
+
+            //COMMENTS MS: Workaround - Page.Header.DataBind() is added to resolve <%# %> header in the head section with the combination of ResolveUrl
+            //....Added to make the js path work within all folders and nested masterpage
+            this.Page.Header.DataBind();
+
+           HighlightSelectedMenuItem();
+        }
+
+        private void HighlightSelectedMenuItem()
+        {
+            string MyURL = Request.Url.AbsoluteUri.ToLower();
+            //COMMENTS MS: Logic - If the url contains no aspx, default.aspx is appended to the absolute url
+            bool _containsaspx = MyURL.Contains(".aspx");;
+            if (!_containsaspx)
+            {
+                MyURL = Request.Url.AbsoluteUri + "default.aspx";
+            }
+            foreach (MenuItem mi in NavigationMenu.Items)
+            {
+                string _navurl = mi.NavigateUrl;
+                string _navurl1 = _navurl.Substring(_navurl.IndexOf("/")).ToLower();
+                if (_navurl1.IndexOf("_") >= 0)
+                {
+                    string _navurl2 = _navurl1.Substring(0,9);
+                    _navurl1 = _navurl2;
+                }
+                 if (!string.IsNullOrEmpty(_navurl1))
+                {
+                    if (MyURL.Contains(_navurl1.Substring(0,4)))
+                    {
+                        mi.Selected = true;
+                    }
+                }
+            }
+        }
+
+        // COMMENTS MS: Workaround - Adding this override so that the asp:Menu control renders properly in Safari and Chrome
+        // See http://geekswithblogs.net/bullpit/archive/2009/07/08/aspmenu-rendering-problems-in-ie8-safari-and-chrome.aspx
+        protected override void AddedControl(Control control, int index)
+        {
+            string str = Request.ServerVariables["http_user_agent"].ToLower();
+            if (str.Contains("safari") || str.Contains("chrome"))
+            {
+                this.Page.ClientTarget = "uplevel";
+            }
+            base.AddedControl(control, index);
+        }
+
+        protected void NavigationMenu_MenuItemDataBound(object sender, MenuEventArgs e)
+        {
+ 
+        }
+
+      
+
+   
+       
+
+        protected void LnkExtn_Click(object sender, EventArgs e)
+        {
+           
+            string _urlold = ConfigurationManager.AppSettings["redirecttoold"];
+            string _urlnew = ConfigurationManager.AppSettings["redirectonew"];
+            if (objCommon.IsVersion("old"))
+            {
+                Response.Redirect(_urlnew);
+               
+            }
+            else
+            {
+                Response.Redirect(_urlold);
+            }
+        }
+    }
+}

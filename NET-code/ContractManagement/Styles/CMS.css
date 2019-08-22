@@ -1,0 +1,134 @@
+﻿body {
+}
+
+.tableborder
+{
+border-right: black 1px solid; border-top: black 1px solid; border-left: black 1px solid; border-bottom: black 1px solid;border-collapse: collapse;
+table-layout:fixed;
+	
+}
+
+.thheader  
+{
+	font-size:1.3em;
+	text-align:center;
+	border: 1px solid #000000;
+	
+}
+.thheaderhori  
+{
+	font-size:1.3em;
+	text-align:center;
+	border-bottom: 1px solid #000000;
+	border-right:1px solid #000000;
+	border-collapse:collapse;
+	
+}
+.tdsubtitle
+{
+	font-weight:bold;
+	 color:#696969;
+	font-size: 1.0 em;
+	 text-align: right;
+	  white-space:nowrap;
+		}
+	
+.tdlink
+{
+	border-bottom: 1px solid #000000;
+	border-right:1px solid #000000;
+	text-align:center;
+	border-collapse:collapse;
+}
+
+.errlabels
+{
+	font-family:Verdana;
+	font-size:x-small;
+	color:Red;
+	font-weight:bold;
+}
+
+.constantheight
+{
+	height:40px;
+}	
+
+.spanred
+{
+	color:Red;
+}
+
+.spanrequired
+{
+    font-style: italic;
+    font-weight: bold;
+}
+
+.formattext
+{
+	font-family:Verdana;
+	font-size:x-small;
+	color:#465c71;
+	font-weight:bold;
+} 
+
+.Largetext
+{
+   font-family:Arial, Helvetica, sans-serif;
+	font-size: large;
+	color:#465c71;
+	font-weight:bold; 
+}
+
+.txtmulti
+{
+	width:400px;
+	height:200px;
+	
+    margin-left: 0px; /* 2 lines */
+}   
+
+.txtnamewidth
+{
+	width:150px;
+}
+
+ .ui-dialog .ui-dialog-content {
+    border: 0;
+    padding: .5em 1em;
+    background:LightGray;
+    overflow: auto;
+}
+
+legend {
+  padding: 0.2em 0.5em;
+   color:#465c71;
+   font-family:Arial, Helvetica, sans-serif;
+  text-align:left;
+  }
+  
+  .errlabelsbig
+{
+	font-family:Verdana;
+	font-size:large;
+	color:Red;
+	font-weight:bold;
+}
+
+.wrap
+{
+     
+	 white-space:normal; width:310px;
+	 white-space: pre; width:310px;          /* CSS 2.0 */
+	white-space:  pre-wrap; width:310px;     /* CSS 2.1 */
+	white-space: pre-line; width:310px;     /* CSS 3.0 */
+	white-space: -pre-wrap; width:310px;    /* Opera 4-6 */
+	white-space: -o-pre-wrap; width:310px;  /* Opera 7 */
+	white-space: -moz-pre-wrap;width:310px; /* Mozilla */
+	white-space: -hp-pre-wrap;width:310px;  /* HP Printers */
+	word-wrap: break-word;
+	
+}
+
+ 

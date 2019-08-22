@@ -1,0 +1,121 @@
+﻿//$Header:$
+//
+// U.S. Department of Energy under contract number DE-AC02-76SF00515
+// DOE O 241.1B, SCIENTIFIC AND TECHNICAL INFORMATION MANAGEMENT In the performance of Department of Energy(DOE) contracted obligations, each contractor is required to manage scientific and technical information(STI) produced under the contract as a direct and integral part of the work and ensure its broad availability to all customer segments by making STI available to DOE's central STI coordinating office, the Office of Scientific and Technical Information (OSTI).
+//  global.cs
+//  Developed by Madhu Swaminathan
+//  Copyright (c) 2013 SLAC. All rights reserved.
+//  This is the global page
+//
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Security;
+using System.Web.SessionState;
+using System.Text;
+using System.Net;
+using System.Reflection;
+using log4net;
+
+namespace ContractManagement
+{
+    public class Global : System.Web.HttpApplication
+    {
+        Business.UserRoles objUserRole = new Business.UserRoles();
+        Business.CMS_Common_Util objCommon = new Business.CMS_Common_Util();
+        protected static readonly ILog Log = LogManager.GetLogger(typeof(Global));
+       
+        void Application_Start(object sender, EventArgs e)
+        {
+            // Code that runs on application startup
+            log4net.Config.XmlConfigurator.Configure();
+           // Log.Info("In app start: " + DateTime.Today.ToShortDateString());
+        }
+
+        void Application_End(object sender, EventArgs e)
+        {
+            //  Code that runs on application shutdown
+
+        }
+
+        void Application_Error(object sender, EventArgs e)
+        {
+            // Code that runs when an unhandled error occurs
+            string _redirecturl="";
+            Exception _ex = Server.GetLastError();           
+
+            string url = HttpContext.Current.Request.Url.AbsolutePath.ToString();
+           
+            try
+            {
+                if (Session["urlhost"] != null)
+                {
+                    _redirecturl = Session["urlhost"] + Request.ApplicationPath + "/" + "Error.aspx?msg=sc";
+                }
+                else
+                {
+                    _redirecturl = "~/Error.aspx";
+                }
+                Log.Error(url, _ex);
+            }
+            catch (HttpRequestValidationException ex)
+            {
+                Log.Error(url, ex);
+                Server.ClearError();
+                Response.Clear();
+
+                Response.Redirect(_redirecturl);
+                Response.End();
+            }
+            catch (HttpException ex)
+            {
+                Log.Error(url, ex);
+                Server.ClearError();
+                Response.Clear();
+                Response.Redirect("~/Error.aspx");
+                Response.End();
+            }
+          
+
+        }
+
+        void Session_Start(object sender, EventArgs e)
+        {
+            // Code that runs when a new session is started
+           
+            InitiateSession();
+            //objUserRole.GetUserRole(objCommon.GetUserID());
+
+            string protocol = System.Web.HttpContext.Current.Request.ServerVariables["SERVER_PORT_SECURE"];
+            if (protocol == null || protocol == "0")
+                protocol = "http://";
+            else
+                protocol = "https://";
+
+
+            Session["urlhost"] = protocol + Request.Url.Host;
+
+        }
+
+        void Session_End(object sender, EventArgs e)
+        {
+            // Code that runs when a session ends. 
+            // Note: The Session_End event is raised only when the sessionstate mode
+            // is set to InProc in the Web.config file. If session mode is set to StateServer 
+            // or SQLServer, the event is not raised.
+            InitiateSession();
+        }
+
+        void InitiateSession()
+        {
+            Session["admin"] = null;
+            Session["cma"] = null;
+            Session["sso"] = null;
+            Session["diradmin"] = null;
+            Session["ald"] = null;
+            Session["ssosuper"] = null;
+        }
+
+    }
+}

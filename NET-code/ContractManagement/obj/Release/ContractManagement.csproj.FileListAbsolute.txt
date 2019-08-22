@@ -1,0 +1,15 @@
+C:\appdev\dotNET40\ContractManagement\ContractManagement\bin\ContractManagement.dll
+C:\appdev\dotNET40\ContractManagement\ContractManagement\bin\ContractManagement.pdb
+C:\appdev\dotNET40\ContractManagement\ContractManagement\obj\Release\ContractManagement.dll
+C:\appdev\dotNET40\ContractManagement\ContractManagement\obj\Release\ContractManagement.pdb
+C:\AppDev\dotNET40\ContractManagement\ContractManagement\bin\ContractManagement.dll.config
+C:\Users\jtang\Documents\appdev\dotNET40\ContractManagement\ContractManagement\bin\ContractManagement.dll.config
+C:\Users\jtang\Documents\appdev\dotNET40\ContractManagement\ContractManagement\bin\ContractManagement.dll
+C:\Users\jtang\Documents\appdev\dotNET40\ContractManagement\ContractManagement\bin\ContractManagement.pdb
+C:\Users\jtang\Documents\appdev\dotNET40\ContractManagement\ContractManagement\obj\Release\ContractManagement.dll
+C:\Users\jtang\Documents\appdev\dotNET40\ContractManagement\ContractManagement\obj\Release\ContractManagement.pdb
+C:\PPPL\ContractManagement\bin\ContractManagement.dll.config
+C:\PPPL\ContractManagement\bin\ContractManagement.dll
+C:\PPPL\ContractManagement\bin\ContractManagement.pdb
+C:\PPPL\ContractManagement\obj\Release\ContractManagement.dll
+C:\PPPL\ContractManagement\obj\Release\ContractManagement.pdb

@@ -1,0 +1,902 @@
+﻿//$Header:$
+//
+// U.S. Department of Energy under contract number DE-AC02-76SF00515
+// DOE O 241.1B, SCIENTIFIC AND TECHNICAL INFORMATION MANAGEMENT In the performance of Department of Energy(DOE) contracted obligations, each contractor is required to manage scientific and technical information(STI) produced under the contract as a direct and integral part of the work and ensure its broad availability to all customer segments by making STI available to DOE's central STI coordinating office, the Office of Scientific and Technical Information (OSTI).
+//  Clause.cs
+//  Developed by Madhu Swaminathan
+//  Copyright (c) 2013 SLAC. All rights reserved.
+//
+//  This is the page that has all Clause related changes
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Text;
+using System.Data;
+using System.Data.OracleClient;
+using System.Text.RegularExpressions;
+using System.Configuration;
+
+namespace ContractManagement.Admin
+{
+    public partial class Clause : BasePage
+    {
+        Data.CMS_DMLUtil objDml = new Data.CMS_DMLUtil();
+        Business.CMS_Common_Util objCommon = new Business.CMS_Common_Util();
+
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            string _mode;
+            string _type;
+            string _clauseId;
+            
+
+            ImgbtnOwn.Attributes.Add("onClick", "OpenJQueryDialog('dialogowneradmin','TxtOwneradmin'); return false;");
+            TxtClauseName.Attributes.Add("onkeydown", "return onKeypress('cmdFind');");
+            string[] _modeArray = { " ", "list", "new", "edit", "view", "reviewadd", "reviewedit", "changeadd", "changeedit", "report" };
+            
+            if (!Page.IsPostBack)
+            {
+                //Only CMA and Admin are allowed to See the clause list
+                CheckIfManager();
+                if ((!_admin) && (!_cma)) Response.Redirect("~/Permission.aspx?msg=gen");
+                _mode = Request.QueryString["mode"];
+
+                //Comments MS: Security - Mode should have one of the items in string array
+                int pos = Array.IndexOf(_modeArray, _mode);
+                if (pos > -1)
+                {
+                    if (!string.IsNullOrEmpty(_mode))
+                    {
+                        if (Regex.IsMatch(_mode, @"^[a-z]+$"))
+                        {
+                            HdnMode.Value = _mode;
+                        }
+                        else { RedirectInvalidParam(); }
+                    }
+                    _type = Request.QueryString["type"];
+                    if (!string.IsNullOrEmpty(_type))
+                    {
+                        //cl represents clause and sc represents subclause
+                        if ((_type == "cl") || (_type == "sc"))
+                        {
+                            HdnType.Value = _type;
+                        }
+                        else { RedirectInvalidParam(); }
+                    }
+                    _clauseId = Request.QueryString["id"];
+                    if (!string.IsNullOrEmpty(_clauseId))
+                    {
+                        if (Regex.IsMatch(_clauseId, "^[0-9]+$"))
+                        {
+                            HdnClauseId.Value = _clauseId;
+                        }
+                        else { RedirectInvalidParam(); }
+                    }
+
+                    //Need to check the inputs using Regex - avoid sqlinjection 
+                    if (_mode == "")
+                    {
+                        _mode = "list";
+                    }
+                    SetPage(_mode, _type);
+                }
+                else
+                {
+                    //COMMENTS MS: For Security, if clause doesn't match the regex, redirect to custom msg
+                    RedirectInvalidParam();
+                }
+                
+               
+            }
+        }
+
+     
+        private void ToggleVisibility(bool boolval)
+        {
+ 
+            DivClauseNum.Visible = boolval;
+            DivClauseNumView.Visible = !boolval;
+            DivName.Visible = boolval;
+            DivNameView.Visible = !boolval;
+            Divreq.Visible = boolval;
+            SpnName.Visible = boolval;
+            SpanClauseNum.Visible = boolval;
+   
+        }
+
+        private void ToggleSpecial(bool boolval)
+        {
+            DivOwner.Visible = boolval;
+            DivOwnerView.Visible = !boolval;
+            DivContract.Visible = boolval;
+            DivContractView.Visible = !boolval;
+            SpanOwner.Visible = boolval;
+            SpanContract.Visible = boolval;
+
+        }
+
+        private void SetPage(string mode, string type)
+        {
+           
+            //Display different page content based on the mode 
+            if (mode == "list")
+            {
+                divClauseList.Visible = true;
+                divClauseNew.Visible = false;
+                HdnDesc.Value = TxtClauseName.Text;
+                BindGrid();
+                cmdAdd.Visible = true; 
+            }
+            else if (mode == "report")
+            {
+                 divClauseList.Visible = true;
+                divClauseNew.Visible = false;
+                HdnDesc.Value = TxtClauseName.Text;
+                BindGrid();
+            }
+
+            else
+            {
+                divClauseList.Visible = false;
+                divClauseNew.Visible = true;
+                if (mode == "new")
+                {
+                    string _clauseType;
+                    trId.Visible = false;
+                    ToggleVisibility(true);
+
+                    DivReview.Visible = true;
+                    DivReviewedit.Visible = false;
+                    DivSubmit.Visible = false;
+                    DivUpdate.Visible = false;
+                    //if it is a subclause
+                    if (type == "sc")
+                    {
+
+                        ToggleSpecial(false);
+                        trClausename.Visible = true;
+                        trparentno.Visible = true;
+                        _clauseType = "Subclause";
+                        Business.ClauseRecord objParentClause = new Business.ClauseRecord();
+                        objParentClause = objDml.GetClauseDetails(HdnClauseId.Value);
+                        LblClauseNameVal.Text = objParentClause.ClauseName;
+                        LblParentnoVal.Text = objParentClause.ClauseNumber;
+                        LblOwnerVal.Text = objParentClause.OwnerName;
+                        LblTypeVal.Text = objParentClause.Contract;
+                        ViewState["parentclauseid"] = HdnClauseId.Value;
+                        ViewState["parentownerid"] = objParentClause.Owner;
+                        ViewState["parentcontractid"] = objParentClause.ContractId;
+                    }
+                    else
+                    {
+                        ToggleSpecial(true);
+                        trClausename.Visible = false;
+                        trparentno.Visible = false;
+                        _clauseType = "Clause";
+                    }
+                    LblSubTitle.Text = "New " + _clauseType;
+                    SetLabelsBasedonType(_clauseType);
+
+                }
+                //When Make changes button is clicked on reviewing a new clause
+                else if (mode == "changeadd")
+                {
+                    ToggleVisibility(true);
+                    if (HdnType.Value == "cl")
+                    {
+                        ToggleSpecial(true);
+                        trClausename.Visible = false;
+                        trparentno.Visible = false;
+                        LblSubTitle.Text = "New Clause";
+                    }
+                    else
+                    {
+                        ToggleSpecial(false);
+                        trClausename.Visible = true;
+                        trparentno.Visible = true;
+                        LblSubTitle.Text = "New Subclause";
+                    }
+                    DivReview.Visible = true;
+                    DivReviewedit.Visible = false;
+                    DivSubmit.Visible = false;
+                    DivUpdate.Visible = false;
+                }
+                //When Make changes button is clicked on reviewing edited changes
+                else if (mode == "changeedit")
+                {
+                    ToggleVisibility(true);
+                    if (type == "cl")
+                    {
+                        ToggleSpecial(true);
+                        LblSubTitle.Text = "Clause";
+                    }
+                    else
+                    {
+                        ToggleSpecial(false);
+                        LblSubTitle.Text = "Subclause";
+                    }
+                    DivReview.Visible = false;
+                    DivReviewedit.Visible = true;
+                    DivSubmit.Visible = false;
+                    DivUpdate.Visible = false;
+                }
+                //When review button is clicked while adding a clause
+                else if (mode == "reviewadd")
+                {
+                    ToggleVisibility(false);
+                    if (type == "cl")
+                    {
+                        trClausename.Visible = false;
+                        trparentno.Visible = false;
+                        LblSubTitle.Text = "Clause";
+                    }
+                    else
+                    {
+                        trClausename.Visible = true;
+                        trparentno.Visible = true;
+                        LblSubTitle.Text = "Subclause";
+                        BtnSaveAddSC.Visible = false;
+                    }
+                    trId.Visible = false;
+                    DivReview.Visible = false;
+                    DivReviewedit.Visible = false;
+                    DivSubmit.Visible = true;
+                    DivUpdate.Visible = false;
+                }
+                //when review button is clicked when Editing a clause
+                else if (mode == "reviewedit")
+                {
+
+                    ToggleVisibility(false);
+                    trId.Visible = true;
+                    DivReview.Visible = false;
+                    DivReviewedit.Visible = false;
+                    DivSubmit.Visible = false;
+                    DivUpdate.Visible = true;
+                }
+                //When viewing or editing an already added clause
+                else if ((mode == "view") || (mode == "edit"))
+                {
+
+                    trId.Visible = true;
+                    DivReview.Visible = false;
+                    DivSubmit.Visible = false;
+                    DivUpdate.Visible = false;
+                    Business.ClauseRecord objClause = new Business.ClauseRecord();
+                    //Display clause details
+                    objClause = objDml.GetClauseDetails(HdnClauseId.Value);
+                    if (objClause.ClauseId != 0)
+                    {
+                        SetLabelsBasedonType(objClause.ClauseType);
+                        if (mode == "view")
+                        {
+                            ToggleVisibility(false);
+                            DivReviewedit.Visible = false;
+                            FillFormView(objClause, mode);
+                        }
+
+                        else if (mode == "edit")
+                        {
+                            ToggleVisibility(true);
+                            DivReviewedit.Visible = true;
+                            FillFormEdit(objClause);
+                        }
+                    }
+                    else { RedirectInvalidParam("noobj"); }
+                }
+
+            }
+
+        }
+
+        private void SetLabelsBasedonType(string clauseType)
+        {
+            string _type;
+            if (clauseType.Equals("Subclause"))
+            {
+            
+                        LblOwner.Text = "Clause Owner:";
+                        LblContract.Text = "Clause Contract:";
+                        LblName.Text = "Subclause Name:";
+                        LblClauseNum.Text = "Subclause Number:";
+                        LblClauseId.Text = "Subclause Id:";
+                        _type = "sc";
+                        LblSubTitle.Text = "Subclause";
+                    }
+                    else
+                    {
+                        LblOwner.Text = "Owner:";
+                        LblContract.Text = "Contract:";
+                        LblName.Text = "Clause Name:";
+                        LblClauseNum.Text = "Clause Number:";
+                        LblClauseId.Text = "Clause Id:";
+                        _type = "cl";
+                        LblSubTitle.Text = "Clause";
+                    }
+            ViewState["type"] = _type;
+        }
+
+        private void FillFormView(Business.ClauseRecord objClause, string mode)
+        {
+            if (mode == "view")
+            {
+                DivEdit.Visible = true;
+                DivDelete.Visible = true;
+            }
+            else { DivEdit.Visible = false; DivDelete.Visible = false; }
+            LblClauseIdVal.Text = objClause.ClauseId.ToString();
+            LblNameVal.Text = objClause.ClauseName;
+            LblClauseNumVal.Text = objClause.ClauseNumber;
+            DivOwner.Visible = false;
+            DivOwnerView.Visible = true;
+            DivContract.Visible = false;
+            DivContractView.Visible = true;
+            SpanClauseName.Visible = false;
+            SpanContract.Visible = false;
+            SpanOwner.Visible = false;
+
+            if (objClause.ClauseType.Equals("Subclause"))
+            {
+                trClausename.Visible = true;
+                trparentno.Visible = true;
+                 DivClauseNameView.Visible = true;
+                LblClauseNameVal.Text = objClause.ParentClause;
+                DivParentnoView.Visible = true;
+                LblParentnoVal.Text = objClause.ParentClauseNum;
+                LblOwnerVal.Text =objCommon.GetEmpname(objClause.ParentOwner.ToString());
+                
+                LblTypeVal.Text = objClause.ParentContractName;
+                HdnType.Value = "sc";
+             }
+            else
+            {
+                trClausename.Visible = false;
+                trparentno.Visible = false;
+                LblOwnerVal.Text = objClause.OwnerName;
+                LblTypeVal.Text = objClause.Contract;
+                HdnType.Value = "cl";
+            }
+           
+
+        }
+
+        private void FillFormEdit(Business.ClauseRecord objClause)
+        {
+            LblClauseIdVal.Text = objClause.ClauseId.ToString();
+            TxtName.Text = objClause.ClauseName;
+            TxtClauseNum.Text = objClause.ClauseNumber;
+            if (objClause.ClauseType.Equals("Subclause"))
+            {
+
+                ToggleSpecial(false);
+                LblOwnerVal.Text = objCommon.GetEmpname(objClause.ParentOwner.ToString());
+                trClausename.Visible = true;
+                trparentno.Visible = true;
+                DivClauseNameView.Visible = true;
+                LblClauseNameVal.Text = objClause.ParentClause;
+                DivClauseNumView.Visible = true;
+                LblParentnoVal.Text = objClause.ParentClauseNum;
+                SpanClauseName.Visible = false;
+
+                LblTypeVal.Text = objClause.ParentContractName;
+                ViewState["parentcontractid"] = objClause.ParentContract;
+                ViewState["parentownerid"] = objClause.ParentOwner;
+                ViewState["parentclauseid"] = objClause.ParentId;
+            }
+            else
+            {
+                ToggleSpecial(true);
+                TxtOwneradmin.Text = objClause.OwnerName;
+                trClausename.Visible = false;
+                trparentno.Visible = false;
+            }
+            int count = DdlType.Items.Count;
+            if (count == 0)
+            {
+                DdlType.DataSourceID = "SDSContract";
+                DdlType.DataTextField = "CONTRACT_NAME";
+                DdlType.DataValueField = "CONTRACT_ID";
+                DdlType.DataBind();
+
+            }
+            if (!string.IsNullOrEmpty(objClause.ContractId.ToString()))
+            {
+                if (DdlType.Items.FindByValue(objClause.ContractId.ToString()) != null)
+                {
+                    DdlType.ClearSelection();
+                    DdlType.Items.FindByValue(objClause.ContractId.ToString()).Selected = true;
+                }
+                else { DdlType.SelectedIndex = 0; }
+            }
+           
+            DivEdit.Visible = false;
+        }
+
+        private void FillClauseObject(string mode, string redrt = "")
+        {
+            Business.ClauseRecord objClause = new Business.ClauseRecord();
+
+            if ((mode != "new") && (mode != "reviewadd"))
+            {
+                objClause.ClauseId = Convert.ToInt32(LblClauseIdVal.Text);             
+            }
+            objClause.ClauseName = Business.WordCharExtension.ReplaceWordChars(TxtName.Text);
+            objClause.ClauseNumber = TxtClauseNum.Text;
+            
+           
+            objClause.ParentId =  Convert.ToInt32(ViewState["parentclauseid"]);
+
+            if (objClause.ParentId == 0)
+            {
+                objClause.ContractId = (DdlType.SelectedIndex != 0) ? Convert.ToInt32(DdlType.SelectedValue) : 0;
+                objClause.Contract = (DivContract.Visible) ? ((DdlType.SelectedIndex != 0) ? DdlType.SelectedItem.Text : "") : LblTypeVal.Text;
+                objClause.Owner = (DivOwner.Visible) ? objCommon.GetEmpid(TxtOwneradmin.Text) : objCommon.GetEmpid(LblOwnerVal.Text);
+                objClause.OwnerName = (DivOwner.Visible) ? TxtOwneradmin.Text : LblOwnerVal.Text;
+            }
+            else
+            {
+                objClause.ContractId = 0;
+                objClause.Contract = "";
+                objClause.Owner = 0;
+                objClause.OwnerName = "";
+            }
+            if ((mode == "new") || (mode == "reviewadd"))
+            {
+                objClause.CreatedBy = objCommon.GetUserID();
+            }
+            if ((mode == "edit") || (mode == "reviewedit"))
+            {
+                objClause.ModifiedBy = objCommon.GetUserID();
+            }
+            
+            
+            if ((mode == "reviewadd") || (mode == "reviewedit"))
+            {
+                if (objClause.ParentId != 0)
+                {
+                    objClause.ClauseType = "Subclause";
+                    objClause.ParentClause = LblClauseNameVal.Text;
+                    objClause.ParentContractName = LblTypeVal.Text;
+                    objClause.ParentClauseNum = LblParentnoVal.Text;
+                    objClause.ParentOwner = Convert.ToInt32(ViewState["parentownerid"]);
+                    objClause.ParentContract = Convert.ToInt32(ViewState["parentcontractid"]);
+                     
+                }
+                else { objClause.ClauseType = "Clause"; 
+                
+                }
+                FillFormView(objClause, mode);
+            }
+            else if (mode == "new")
+            {
+                SaveClause(objClause, redrt);
+            }
+            else if (mode == "edit")
+            {
+                UpdateClause(objClause);
+            }
+        }
+
+        protected void cmdAdd_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("Clause.aspx?mode=new&type=cl");
+        }
+
+        protected void cmdCancel_Click(object sender, EventArgs e)
+        {
+            SetPage("list","");
+        }
+
+        private void SaveClause(Business.ClauseRecord objClause, string redrt)
+        {
+            string _clauseId = objDml.CreateClause(objClause.ContractId, objClause.ClauseName, objClause.ClauseNumber, objClause.ParentId, objClause.Owner, objClause.CreatedBy);
+            HdnClauseId.Value = _clauseId;
+
+            if (_clauseId != "0")
+            {
+                if (redrt == "")
+                {
+                    objCommon.CreateMessageAlertSM(this, ReturnType(objClause.ParentId) + " Added", "Info", "Clause.aspx?mode=view&id=" + HdnClauseId.Value);
+                }
+                else if (redrt == "sc")
+                {
+                    objCommon.CreateMessageAlertSM(this, ReturnType(objClause.ParentId) + " Added", "Info", "Clause.aspx?mode=new&type=sc&id=" + HdnClauseId.Value);
+                }
+                else if (redrt == "req")
+                {
+                    objCommon.CreateMessageAlertSM(this, ReturnType(objClause.ParentId) + " Added", "Info", "Requirement.aspx?mode=new&clid=" + HdnClauseId.Value);
+                }
+            }
+            else
+            {
+                objCommon.CreateMessageAlertSM(this, "Error! " + ReturnType(objClause.ParentId) + " could not be added", "Info", false);
+            }
+        }
+        private string ReturnType(int parentId)
+        {
+            string _type;
+
+            if (parentId == 0)
+            {
+                _type = "Clause";
+            }
+            else
+            {
+                _type = "Subclause";
+
+            }
+            return _type;
+        }
+        private void UpdateClause(Business.ClauseRecord objClause)
+        {
+            string _result = objDml.UpdateClause(objClause.ClauseId, objClause.ClauseName, objClause.ClauseNumber, objClause.ParentId, objClause.Owner, objClause.ModifiedBy,objClause.ContractId);
+           
+            if (_result == "0")
+            {
+                objCommon.CreateMessageAlertSM(this,ReturnType(objClause.ParentId) + " Updated", "Info", "Clause.aspx?mode=view&id=" + HdnClauseId.Value);
+            }
+            else
+            {
+                objCommon.CreateMessageAlertSM(this, "Error! " + ReturnType(objClause.ParentId) + " not Updated", "Info", false);
+            }
+
+
+        }
+        #region "Clause List"
+        protected void GvClause_Sorting(object sender, GridViewSortEventArgs e)
+        {
+            this.SortExpression = e.SortExpression;
+            if (ViewState["sortdirection"].ToString() == "ASC")
+            {
+                this.SortDirect = "DESC";
+            }
+            else
+            {
+                this.SortDirect = "ASC";
+            }
+            BindGrid();
+        }
+
+        protected void GvClause_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            GvClause.PageIndex = e.NewPageIndex;
+            BindGrid();
+        }
+
+        protected void GvClause_RowCommand(object sender, GridViewCommandEventArgs e)
+        {
+            if (e.CommandName == "sc")
+            {
+                string _clauseId = e.CommandArgument.ToString();
+                Response.Redirect("Clause.aspx?mode=new&type=sc&id=" + _clauseId);
+            }
+            else if (e.CommandName == "req")
+            {
+                string _clauseId = e.CommandArgument.ToString();
+                Response.Redirect("Requirement.aspx?mode=new&clid=" + _clauseId);
+            }
+
+        }
+
+        private void BindGrid()
+        {
+            StringBuilder _sbFilter = new StringBuilder();
+
+            using (OracleCommand _cmdList = new OracleCommand())
+            {
+                if (HdnDesc.Value != "")
+                {
+                    _sbFilter = SetSBFilter(_sbFilter);
+                    _sbFilter.Append(" LOWER(CL.CLAUSE_NAME) LIKE :Clause OR LOWER(CL.CLAUSE_NUMBER) LIKE :Clause OR LOWER(CL.SUBCLAUSENAME) LIKE :Clause");
+                    _sbFilter.Append(" OR LOWER(CL.SUBCLAUSENUM) LIKE :Clause OR LOWER(CL.OWNERNAME) LIKE :Clause OR LOWER(CL.CONTRACT_NAME) LIKE :Clause OR LOWER(CL.CLAUSETYPE) LIKE :Clause");
+                    _cmdList.Parameters.Add(":Clause", OracleType.VarChar).Value = "%" + Server.HtmlEncode(HdnDesc.Value.ToLower()) + "%";
+                }
+
+                FillClauseDetails(_sbFilter.ToString(), _cmdList);
+
+            }
+        }
+
+        protected void FillClauseDetails(string filter, OracleCommand cmdList)
+        {
+            DataSet _dsClause = new DataSet();
+            filter += " ORDER BY " + SortExpression + " " + SortDirect;
+
+            _dsClause = objDml.GetClauseInfo(filter, cmdList);
+            ViewState["clause"] = _dsClause.Tables["clause"];
+
+            if (_dsClause.Tables["clause"].Rows.Count > 0)
+            {
+                LblInfo.Visible = true;
+                LblFooter.Visible = true;
+                GvClause.DataSource = _dsClause.Tables["clause"];
+                GvClause.DataBind();
+            }
+            else
+            {
+                LblInfo.Visible = false;
+                LblFooter.Visible = false;
+                GvClause.DataSource = null;
+                GvClause.DataBind();
+            }
+        }
+
+        protected string SortExpression
+        {
+            get
+            {
+                if (null == ViewState["sort"])
+                {
+                    ViewState["sort"] = "CLAUSE_ID";
+                }
+                return ViewState["sort"].ToString();
+            }
+
+            set { ViewState["sort"] = value; }
+        }
+
+        protected string SortDirect
+        {
+            get
+            {
+                if (null == ViewState["sortdirection"])
+                {
+                    ViewState["sortdirection"] = "DESC";
+                }
+                return ViewState["sortdirection"].ToString();
+            }
+            set
+            {
+                ViewState["sortdirection"] = value;
+            }
+        }
+
+        protected void cmdFind_Click(object sender, EventArgs e)
+        {
+            HdnDesc.Value = TxtClauseName.Text.Trim();
+            BindGrid();
+        }
+
+        protected void GvClause_RowDataBound(object sender, GridViewRowEventArgs e)
+        {
+
+
+            if (e.Row.RowType == DataControlRowType.DataRow)
+            {
+                DataRowView rowView = (DataRowView)e.Row.DataItem;
+                string _clausetype;
+
+                _clausetype = rowView["CLAUSETYPE"].ToString();
+                LinkButton LnkSubclause = (LinkButton)e.Row.FindControl("LnkSubclause");
+                if (_clausetype.ToLower().Equals("subclause"))
+                {
+                    LnkSubclause.Visible = false;
+                    
+                }
+                else
+                {
+                    LnkSubclause.Visible = true;
+                    e.Row.Cells[4].Text = "-";
+                    e.Row.Cells[5].Text = "-";
+                }
+            }
+        }
+
+        protected void GvClause_Sorted(object sender, EventArgs e)
+        {
+            string _sortExpressionLabel = "";
+            string _sortDirectionLabel = "";
+
+            switch (ViewState["sort"].ToString().ToUpper())
+            {
+                case "CLAUSE_ID":
+                    _sortExpressionLabel = "Clause Id";
+                    break;
+                case "CLAUSE_NAME":
+                    _sortExpressionLabel = "Clause Name";
+                    break;
+                case "CONTRACT_NAME":
+                    _sortExpressionLabel = "Contract";
+                    break;
+                case "CLAUSE_NUMBER":
+                    _sortExpressionLabel = "Clause Number";
+                    break;
+                case "OWNERNAME":
+                    _sortExpressionLabel = "Owner";
+                    break;
+                case "CLAUSETYPE":
+                    _sortExpressionLabel = "Clause Type";
+                    break;
+                default:
+                    _sortExpressionLabel = "";
+                    break;
+            }
+            switch (ViewState["sortdirection"].ToString())
+            {
+                case "ASC":
+                    _sortDirectionLabel = "Ascending";
+                    break;
+                case "DESC":
+                    _sortDirectionLabel = "Descending";
+                    break;
+                default:
+                    _sortDirectionLabel = "";
+                    break;
+
+            }
+            if ((_sortExpressionLabel != "") && (_sortDirectionLabel != ""))
+            {
+                LblFooter.Text = "Sorted by " + _sortExpressionLabel +
+                            " in " + _sortDirectionLabel + " order.";
+            }
+
+        }
+
+        #endregion
+
+        #region "Control Events"
+
+        protected void BtnReview_Click(object sender, EventArgs e)
+        {
+            
+                if (Page.IsValid)
+                {
+                    SetPage("reviewadd", HdnType.Value);
+                    FillClauseObject("reviewadd");
+                }
+                       
+        }
+
+      
+
+        protected void BtnReview2_Click(object sender, EventArgs e)
+        {
+
+            if (Page.IsValid)
+            {
+                SetPage("reviewedit", "");
+                FillClauseObject("reviewedit");
+            }
+        }
+
+
+        protected void BtnSave_Click(object sender, EventArgs e)
+        {
+            ScriptManager.RegisterStartupScript(this, GetType(), "key", "DisableSubmit('new');", true);
+            FillClauseObject("new");
+        }
+
+        protected void BtnChange_Click(object sender, EventArgs e)
+        {
+            SetPage("changeadd",Server.HtmlEncode(HdnType.Value));
+        }
+
+        protected void BtnUpdate_Click(object sender, EventArgs e)
+        {
+            ScriptManager.RegisterStartupScript(this, GetType(), "key", "DisableSubmit('edit');", true);
+            FillClauseObject("edit");
+        }
+
+        protected void BtnCancel_Click(object sender, EventArgs e)
+        {
+            SetPage("view", "");
+        }
+
+        protected void BtnMoreChange_Click(object sender, EventArgs e)
+        {
+            if (ViewState["type"] != null)
+            {
+                SetPage("changeedit", ViewState["type"].ToString());
+            }
+        }
+
+        protected void DdlType_DataBound(object sender, EventArgs e)
+        {
+            DdlType.Items.Insert(0, new ListItem("--Choose One--", "0"));
+        }
+
+        protected void BtnEdit_Click(object sender, EventArgs e)
+        {
+            DivEdit.Visible = false;
+            Response.Redirect("Clause.aspx?mode=edit&id=" + Server.HtmlEncode(HdnClauseId.Value));
+        }
+
+        protected void BtnDelete_Click(object sender, EventArgs e)
+        {
+            DivDelete.Visible = false;
+            string _errCode;
+            bool _isChildExists = true;
+            string _objchldMsg = "";
+            string _objOrig = "";
+
+            if (HdnType.Value == "cl")
+            {
+                _isChildExists = objDml.CheckIfChildExists(HdnClauseId.Value, "cl1"); //Check if subclause exists
+                _objchldMsg = "Subclause";
+                if (!_isChildExists)
+                {
+                    _isChildExists = objDml.CheckIfChildExists(HdnClauseId.Value, "cl"); // check if requirement exists for clause
+                    _objchldMsg = "Requirement";
+                }
+                _objOrig = "Clause";
+            }
+            else if (HdnType.Value == "sc")
+            {
+                _isChildExists = objDml.CheckIfChildExists(HdnClauseId.Value, "sc"); //check if requirement exists for subclause
+                _objchldMsg = "Requirement";
+                _objOrig = "Subclause";
+           }
+
+            if (!_isChildExists)
+            {
+                _errCode = objDml.DeleteClause(Convert.ToInt32(HdnClauseId.Value), objCommon.GetUserID());
+            }
+            else
+            {
+                _errCode = "notvalid";
+            }
+
+           
+            if (_errCode == "err")
+            {
+                objCommon.CreateMessageAlertSM(this, "Error! " + _objOrig + " could not be deleted. //n Please try later", "error", false);
+               SetPage("view", HdnType.Value );
+            }
+            else if (_errCode == "notvalid")
+            {
+                objCommon.CreateMessageAlertSM(this, _objchldMsg + "/s exists under this " + _objOrig + ". Please delete the " + _objchldMsg + "/s first and try again. ", "error", false);
+                SetPage("view", HdnType.Value);
+            }
+            else
+            { objCommon.CreateMessageAlertSM(this, _objOrig + " marked as deleted successfully", "msg", true); }
+       
+
+        }
+
+        #endregion
+
+        protected void CvOwn_ServerValidate(object source, ServerValidateEventArgs args)
+        {
+
+            if (TxtOwneradmin.Text != "")
+            {
+                //Check if the name entered as owner is a valid name
+                bool _isValid = objDml.CheckValidName(TxtOwneradmin.Text);
+                if (!_isValid)
+                {
+                    args.IsValid = false;
+
+                }
+                else args.IsValid = true;
+            }
+            else { args.IsValid = true; }
+
+        }
+
+        protected void LblNameVal_PreRender(object sender, EventArgs e)
+        {
+            objCommon.WrapNeat(LblClauseNameVal.Text);
+        }
+
+        protected void BtnSaveAddSC_Click(object sender, EventArgs e)
+        {
+            ScriptManager.RegisterStartupScript(this, GetType(), "key", "DisableSubmit('new');", true);
+            FillClauseObject("new","sc");
+        }
+
+        protected void BtnSaveAddReq_Click(object sender, EventArgs e)
+        {
+            ScriptManager.RegisterStartupScript(this, GetType(), "key", "DisableSubmit('new');", true);
+            FillClauseObject("new","req");
+        }
+
+        
+
+
+    }
+}

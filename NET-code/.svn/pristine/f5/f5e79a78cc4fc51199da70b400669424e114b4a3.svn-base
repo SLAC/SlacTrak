@@ -1,0 +1,110 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.master.cs" Inherits="ContractManagement.SiteMaster" %>
+
+
+
+<!DOCTYPE html >
+<meta http-equiv="X-UA-Compatible" content="IE=8">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head runat="server">
+    <title></title>
+     <link href="~/Styles/Site.css" rel="stylesheet" type="text/css" />
+    
+    <script type="text/javascript" src="<%# this.Page.ResolveUrl("~/Scripts/jquery-1.4.1.min.js") %>">
+    </script>
+   
+
+   
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server">
+    </asp:ContentPlaceHolder>
+   
+</head>
+<body>
+    <form runat="server">
+    <table>
+        <tr>
+            <td style="width:50%;">&nbsp;</td>
+            <td>
+                <asp:Label ID="LblInfo" runat="server" 
+                            Visible="False" Text=" This is the Test System ! " Font-Bold="True" 
+                            Font-Size="XX-Large" ForeColor="Red"></asp:Label>
+                
+            </td>
+        </tr>
+    </table>
+   
+    <div class="page">
+         
+        <div class="header">
+            <div class="title">
+                    <table width="100%">
+                        <tr>
+                            <td style="width:80%;">  
+                                
+                                    <h1><asp:Label ID="LblApp" runat="server" Text="SlacTrak"></asp:Label></h1>
+                                       <asp:Label ID="LblAppExtn" runat="server" Font-Size="Medium" ForeColor="White"></asp:Label>
+                                <asp:LinkButton ID="LnkExtn" runat="server" OnClick="LnkExtn_Click" ForeColor="White"  Font-Size="Medium">click here</asp:LinkButton>
+                                <asp:Label ID="LblAppExtnEnd" runat="server" Font-Size="Medium" ForeColor="White"></asp:Label>
+                                 &nbsp;<a href="http://www-group.slac.stanford.edu/legal/Contract.asp" runat="server" visible="false" id="aLinknew" target="_blank" style="color:gold;">Click here to access the conformed prime contract</a>
+                            </td>                         
+                            <td align="right" style="color:White; font-size:15px;"> Welcome <%= UserName %> </td>
+                        </tr>
+                        
+                        
+                    </table>
+                      
+                    
+                
+            </div> 
+            <div class="clear hideSkiplink">
+
+
+
+                <asp:Menu ID="NavigationMenu" runat="server" CssClass="menu" 
+                      EnableViewState="false"   IncludeStyleBlock="true" Orientation="Horizontal"  MaximumDynamicDisplayLevels="2"
+                          StaticDisplayLevels="2"  DynamicHorizontalOffset="2"
+                      onmenuitemdatabound="NavigationMenu_MenuItemDataBound" >
+                     
+                    <Items>
+                        <asp:MenuItem NavigateUrl="~/Default.aspx" Text="My Dashboard"  Value="0"/>
+                        <asp:MenuItem NavigateUrl="~/Deliverable_List.aspx" Text="Deliverables" Value="1"/>
+                        <asp:MenuItem NavigateUrl="~/Admin/Default.aspx" Text="Administration" Value="2" ></asp:MenuItem>
+                        <asp:MenuItem NavigateUrl="~/Report_Home.aspx" Text ="Reports" Value="3"></asp:MenuItem>
+                          
+                       
+
+                    </Items>
+                  
+                    <StaticSelectedStyle BackColor="#bfcbd6" ForeColor="#465c71"  />
+                    <DynamicSelectedStyle BackColor="#bfcbd6" ForeColor="#465c71"  />
+                    
+                    <StaticHoverStyle BackColor="Wheat" ForeColor="SteelBlue" />
+                    <DynamicHoverStyle BackColor="Wheat" ForeColor="SteelBlue" />
+                    <StaticMenuItemStyle HorizontalPadding="20px" />
+
+
+
+                </asp:Menu>
+               
+            </div>
+           
+   
+        </div>
+        
+        <div class="main" style="height:100%;">
+     
+                           
+            <asp:ContentPlaceHolder ID="MainContent" runat="server">
+          
+           
+            </asp:ContentPlaceHolder>
+            
+        </div>
+        <div class="clear">
+        </div>
+    </div>
+    <div class="footer">
+        Page Owner: <a href="https://slacspace.slac.stanford.edu/sites/ipm/requirementsmanagement/default.aspx" target="_blank" >Contract Management</a>
+    </div>
+    </form>
+</body>
+</html>

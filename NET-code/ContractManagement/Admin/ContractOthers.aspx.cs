@@ -1,0 +1,203 @@
+﻿//$Header:$
+//
+// U.S. Department of Energy under contract number DE-AC02-76SF00515
+// DOE O 241.1B, SCIENTIFIC AND TECHNICAL INFORMATION MANAGEMENT In the performance of Department of Energy(DOE) contracted obligations, each contractor is required to manage scientific and technical information(STI) produced under the contract as a direct and integral part of the work and ensure its broad availability to all customer segments by making STI available to DOE's central STI coordinating office, the Office of Scientific and Technical Information (OSTI).
+//  ContractOthers.cs
+//  Developed by Madhu Swaminathan
+//  Copyright (c) 2013 SLAC. All rights reserved.
+//
+//  This is the page with all Contract related changes.
+
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+using System.Data;
+using System.Data.OracleClient;
+using System.Text;
+
+namespace ContractManagement.Admin
+{
+    public partial class ContractOthers : BasePage
+    {
+        Data.CMS_DMLUtil objDml = new Data.CMS_DMLUtil();
+        Business.CMS_Common_Util objCommon = new Business.CMS_Common_Util();
+        protected void Page_Load(object sender, EventArgs e)
+        {
+            if (!Page.IsPostBack)
+            {
+                CheckIfManager();
+                if ((!_admin) && (!_cma)) Response.Redirect("~/Permission.aspx?msg=gen");
+                BindGrid("contract");
+                BindGrid("type");
+            }
+        }
+
+        private void BindGrid(string group)
+        {
+            StringBuilder _sbFilter = new StringBuilder();
+
+            using (OracleCommand _cmdList = new OracleCommand())
+            {
+                if (group == "contract")
+                {
+                    _sbFilter = SetSBFilter(_sbFilter);
+                   _sbFilter.Append(" GROUP_ID IN (1,2)");
+                    
+                }
+                else if (group == "type")
+                {
+                    _sbFilter = SetSBFilter(_sbFilter);
+                    _sbFilter.Append(" GROUP_ID IN (2,3)");
+                    
+                }
+
+                FillContractDetails(_sbFilter.ToString(),  group);
+            } 
+        }
+
+        private void FillContractDetails(string filter, string group)
+        {
+            DataSet _dsContract = new DataSet();
+            GridView gvGen = null;
+
+            _dsContract = objDml.GetContractTypeInfo(filter);
+
+            if (group == "contract")
+            {
+                gvGen = (GridView)FindControlRecursive("GvContract");
+            }
+            else if (group == "type")
+            {
+                gvGen = (GridView)FindControlRecursive("GvType");
+            }
+
+
+            if (_dsContract.Tables["contract"].Rows.Count > 0)
+            {
+                gvGen.DataSource = _dsContract.Tables["contract"];
+                gvGen.DataBind();
+            }
+            else
+            {
+                gvGen.DataSource = null;
+                gvGen.DataBind();
+            }
+        }
+
+        protected void GvContract_RowCommand(object sender, GridViewCommandEventArgs e)
+        {
+            if (e.CommandName == "add")
+            {
+                if (!Page.IsValid)
+                {
+                    return;
+                }
+                TextBox TxtName = (TextBox)GvContract.FooterRow.FindControl("TxtName");
+                DropDownList DdlConType = (DropDownList)GvContract.FooterRow.FindControl("DdlConType");
+                TextBox TxtShortName = (TextBox)GvContract.FooterRow.FindControl("TxtShortName");
+                string _parentId = "0";
+                string _parentName = "";
+                if (DdlConType.SelectedValue == "1")
+                {
+                    DropDownList DdlParentName = (DropDownList)GvContract.FooterRow.FindControl("DdlParentName");
+                    _parentId = DdlParentName.SelectedValue;
+                    _parentName = DdlParentName.SelectedItem.Text;
+                }
+                FillContractObject(TxtName.Text, DdlConType.SelectedItem.Text, _parentId,_parentName,TxtShortName.Text, 2);
+
+            }
+        }
+
+        private void FillContractObject(string name, string conType, string parentId, string parentName, string shortName, int groupId)
+        {
+            string _msg = "";
+            Business.ContractTypes objContract = new Business.ContractTypes();
+            objContract.ContractName = name;
+            objContract.ContractType = conType;
+            objContract.ParentId = Convert.ToInt32(parentId);
+            objContract.ParentContract = parentName;
+            objContract.ShortName = shortName;
+            objContract.CreatedBy = objCommon.GetUserID();
+            objContract.GroupID = groupId;
+
+            string _contractId = objDml.CreateContract(objContract.ContractName, objContract.ParentId, objContract.GroupID, objContract.ShortName, objContract.CreatedBy);
+            if (groupId == 3)
+            {
+                _msg = "Type ";
+            }
+            else { _msg = "Contract "; }
+            if (_contractId != "0")
+            {
+                objCommon.CreateMessageAlertSM(this, _msg +"Added", "info", false);
+                BindGrid("contract");
+                BindGrid("type");
+            }
+            else
+            {
+                objCommon.CreateMessageAlertSM(this, "Error! " + _msg + "not added", "error", false);
+            }
+        }
+
+        protected void GvContract_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            GvContract.PageIndex = e.NewPageIndex;
+            BindGrid("contract");
+            BindGrid("type");
+        }
+
+        protected void DdlConType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            DropDownList ddl = (DropDownList)sender;
+            GridViewRow row = (GridViewRow)ddl.Parent.Parent;
+
+            DropDownList ddlname = (DropDownList)row.Cells[3].FindControl("DdlParentName");
+            Label Lblname = (Label)row.Cells[3].FindControl("LblParentName");
+            RequiredFieldValidator Rfv = (RequiredFieldValidator)row.Cells[3].FindControl("RfvParent");
+            
+            if (ddl.SelectedValue == "1")
+            {
+                ddlname.Visible = true;
+                Lblname.Visible = false;
+                Rfv.Visible = true;
+            }
+            else
+            {
+                ddlname.Visible = false;
+                Lblname.Visible = true;                
+                Rfv.Visible = false;
+            }
+        }
+
+        protected void GVType_PageIndexChanging(object sender, GridViewPageEventArgs e)
+        {
+            GVType.PageIndex = e.NewPageIndex;
+            BindGrid("contract");
+            BindGrid("type");
+        }
+
+        protected void GVType_RowCommand(object sender, GridViewCommandEventArgs e)
+        {
+            if (e.CommandName == "add")
+            {
+                if (!Page.IsValid)
+                {
+                    return;
+                }
+                TextBox TxtName = (TextBox)GVType.FooterRow.FindControl("TxtTypeName");
+
+                TextBox TxtShortName = (TextBox)GVType.FooterRow.FindControl("TxtTypeShortName");
+                string _parentId = "0";
+                string _parentName = "";
+                
+                FillContractObject(TxtName.Text, "", _parentId, _parentName, TxtShortName.Text, 3);
+
+            }
+        }
+
+      
+    }
+}

@@ -1,0 +1,75 @@
+﻿<?xml version="1.0"?>
+
+<!--
+  For more information on how to configure your ASP.NET application, please visit
+  http://go.microsoft.com/fwlink/?LinkId=169433
+  -->
+
+<configuration>
+  <configSections>
+     <section name="log4net" type="log4net.Config.Log4NetConfigurationSectionHandler, Log4net" />
+  </configSections>
+
+  <appSettings>
+    <add key="Prodserver" value="N" />
+    <add key="slactrakver" value ="new"/> <!-- old, new, novalue-->
+    <add key="redirecttoold" value ="https://qa-www-bis2.slac.stanford.edu/archive/contractmanagement"/>
+    <add key="redirectonew" value="https://qa-www-bis2.slac.stanford.edu/contractmanagement"/>
+    
+  </appSettings>
+  <connectionStrings>
+    <clear />
+    <add name="SLAC_WEB" connectionString="data source=slacdev2;Persist Security Info=True;User ID=APPS_WEB;Password=s3curew3b.a.2018.02;Unicode=True;"
+      providerName="System.Data.OracleClient" />
+ 
+  </connectionStrings>
+ 
+  <system.web>
+    <compilation debug="true" targetFramework="4.0" />
+  
+    <membership>
+      <providers>
+        <clear/>
+        <add name="AspNetSqlMembershipProvider" type="System.Web.Security.SqlMembershipProvider" connectionStringName="ApplicationServices"
+             enablePasswordRetrieval="false" enablePasswordReset="true" requiresQuestionAndAnswer="false" requiresUniqueEmail="false"
+             maxInvalidPasswordAttempts="5" minRequiredPasswordLength="6" minRequiredNonalphanumericCharacters="0" passwordAttemptWindow="10"
+             applicationName="/" />
+      </providers>
+    </membership>
+  
+    <profile>
+      <providers>
+        <clear/>
+        <add name="AspNetSqlProfileProvider" type="System.Web.Profile.SqlProfileProvider" connectionStringName="ApplicationServices" applicationName="/"/>
+      </providers>
+    </profile>
+
+    <roleManager enabled="false">
+      <providers>
+        <clear/>
+        <add name="AspNetSqlRoleProvider" type="System.Web.Security.SqlRoleProvider" connectionStringName="ApplicationServices" applicationName="/" />
+        <add name="AspNetWindowsTokenRoleProvider" type="System.Web.Security.WindowsTokenRoleProvider" applicationName="/" />
+      </providers>
+    </roleManager>
+    <httpRuntime executionTimeout="150" maxRequestLength="716800" />
+    <customErrors mode="On" >
+      <error statusCode="403" redirect="Error.aspx"/>
+      <error statusCode="404" redirect="Error.aspx"/>
+      <error statusCode="500" redirect="Error.aspx"/>
+    </customErrors>
+  </system.web>
+
+  <system.webServer>
+     <modules runAllManagedModulesForAllRequests="true"/>
+    <httpErrors errorMode="Custom" existingResponse="Replace">
+      <remove statusCode="404" subStatusCode="13" />
+      <error statusCode="404" subStatusCode="13" prefixLanguageFilePath=""
+        path="Error.aspx?msg=file" responseMode="Redirect" />
+    </httpErrors>
+    <security>
+      <requestFiltering>
+        <requestLimits maxAllowedContentLength="32000000" />
+      </requestFiltering>
+    </security>
+  </system.webServer>
+</configuration>

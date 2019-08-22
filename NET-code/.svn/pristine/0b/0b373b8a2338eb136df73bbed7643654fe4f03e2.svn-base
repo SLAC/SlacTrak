@@ -1,0 +1,34 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace ContractManagement.Business
+{
+    public class NotificationSchedule
+    {
+        private int _freqNotifyId;
+        private int _frequencyId;
+        private int _notifyScheduleId;
+
+
+        public int FreqNotifyId
+        {
+            get { return _freqNotifyId; }
+            set { _freqNotifyId = value; }
+        }
+
+        public int FrequencyId
+        {
+            get { return _frequencyId; }
+            set { _frequencyId = value; }
+
+        }
+
+        public int NotifyScheduleId
+        {
+            get { return _notifyScheduleId; }
+            set { _notifyScheduleId = value; }
+        }
+    }
+}
